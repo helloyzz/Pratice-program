@@ -1,12 +1,11 @@
 #include "wavCapture.h"
 
 wavCapture::wavCapture()
-	: pGraph(NULL), pDevice(NULL), pInfTee(NULL),
+	: audioManage(), pDevice(NULL), pInfTee(NULL),
 	pWavDest(NULL), pRender(NULL), pWriter(NULL), 
 	pSink(NULL), pControl(NULL){
 }
 wavCapture::~wavCapture() {
-	safeRelease(&pGraph);
 	safeRelease(&pDevice);
 	safeRelease(&pInfTee);
 	safeRelease(&pWavDest);
@@ -17,54 +16,33 @@ wavCapture::~wavCapture() {
 }
 
 // if flag > 0 capture audio throw render else if flag == 0 not throw render
-HRESULT wavCapture::initCapture(WCHAR* filePath, const BSTR deviceName, UINT type) {
-	HRESULT hr = -1;
+HRESULT wavCapture::initCapture(WCHAR* filePath, const BSTR deviceName) {
+	HRESULT hr = S_FALSE;
 
-	if(filePath==NULL || deviceName==NULL) return hr;
-	//init instance
-	registerWavFilter();
-	hr = createInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, &pGraph);
-	if(hr!=S_OK) return hr;
-	hr = addCategoryByName(CLSID_AudioInputDeviceCategory, pGraph, &pDevice, deviceName);
-	if(hr!=S_OK) return hr;
-	hr = addFilterByCLSID(pGraph, CLSID_InfTee, &pInfTee, NULL);
-	if(hr!=S_OK) return hr;
-	hr = addFilterByCLSID(pGraph, CLSID_WavDest, &pWavDest, NULL);
-	if(hr!=S_OK) return hr;
-	hr = addFilterByCLSID(pGraph, CLSID_DSoundRender, &pRender, NULL);
-	if(hr!=S_OK) return hr;
-	hr = addFilterByCLSID(pGraph, CLSID_FileWriter, &pWriter, NULL);
-	if(hr!=S_OK) return hr;
-	//init interface
-	hr = pWriter->QueryInterface(IID_IFileSinkFilter, (void**)&pSink);
-	if(hr!=S_OK) return hr;
-	hr = pSink->SetFileName(filePath, NULL);
-	if(hr!=S_OK) return hr;
-	hr = pGraph->QueryInterface(IID_IMediaControl, (void**)&pControl);
-	if(hr!=S_OK) return hr;
-	//connect filters
-	if(type) {
-		hr = connectFilters(pGraph, pDevice, pInfTee);
-		if(hr!=S_OK) return hr;
-		hr = connectFilters(pGraph, pInfTee, pWavDest);
-		if(hr!=S_OK) return hr;
-		hr = connectFilters(pGraph, pInfTee, pRender);
-		if(hr!=S_OK) return hr;
-		hr = connectFilters(pGraph, pWavDest, pWriter);
-	} else {
-		hr = connectFilters(pGraph, pDevice, pWavDest);
-		if(hr!=S_OK) return hr;
-		hr = connectFilters(pGraph, pWavDest, pWriter);
+	if(filePath && deviceName && 
+		!registerWavFilter() && 
+		!createInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, &pGraph) && 
+		!addCategoryByName(CLSID_AudioInputDeviceCategory, &pDevice, deviceName) && 
+		!addFilterByCLSID(CLSID_InfTee, &pInfTee, NULL) && 
+		!addFilterByCLSID(CLSID_WavDest, &pWavDest, NULL) && 
+		!addFilterByCLSID(CLSID_DSoundRender, &pRender, NULL) && 
+		!addFilterByCLSID(CLSID_FileWriter, &pWriter, NULL) && 
+		!pWriter->QueryInterface(IID_IFileSinkFilter, (void**)&pSink) && 
+		!pSink->SetFileName(filePath, NULL) && 
+		!pGraph->QueryInterface(IID_IMediaControl, (void**)&pControl) && 
+		!connectFilters(pDevice, pWavDest) && 
+		!connectFilters(pWavDest, pWriter)) {
+		hr = S_OK;
 	}
 	return hr;
 }
-void wavCapture::startCapture() {
-	pControl->Run();
+HRESULT wavCapture::startCapture() {
+	return pControl->Run();
 }
-void wavCapture::pauseCapture() {
-	pControl->Pause();
+HRESULT wavCapture::pauseCapture() {
+	return pControl->Pause();
 }
-void wavCapture::stopCapture() {
-	pControl->Stop();
+HRESULT wavCapture::stopCapture() {
 	unRegisterWavFilter();
+	return pControl->Stop();
 }

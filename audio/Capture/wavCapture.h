@@ -12,12 +12,11 @@ public:
 	~wavCapture();
 
 	//wav capture
-	HRESULT initCapture(WCHAR* filePath, const BSTR deviceName, UINT type);
-	void startCapture();
-	void pauseCapture();
-	void stopCapture();
+	HRESULT initCapture(WCHAR* filePath, const BSTR deviceName);
+	HRESULT startCapture();
+	HRESULT pauseCapture();
+	HRESULT stopCapture();
 private:
-	IGraphBuilder* pGraph;
 	IBaseFilter* pDevice;
 	IBaseFilter* pInfTee;
 	IBaseFilter* pWavDest;

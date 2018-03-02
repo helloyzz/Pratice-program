@@ -1,15 +1,14 @@
 #ifndef _COMMON_FUN_
 #define _COMMON_FUN_
 
-#include "fileIndex.h"
+#include "baseIndex.h"
+
 
 static inline void initCom() {
 	HWND hwnd = NULL;
-	LPCTSTR text = L"INITIALIZE ERROR";
-	LPCTSTR caption = L"PROMPT";
 	HRESULT hr = CoInitialize(NULL);
 	if(S_OK!=hr) {
-		MessageBox(hwnd, text, caption, MB_OK);
+		MessageBox(hwnd, INITCOMERRORTEXT, INITCOMPROMPT, MB_OK);
 	}
 }
 static inline void releaseCom() {
@@ -26,77 +25,76 @@ static inline void safeRelease(Clazz** p) {
 //create an instance
 template<typename TYPE>
 static inline HRESULT createInstance(CLSID clsid, LPUNKNOWN pUnkOuter, DWORD context, TYPE** pType) {
-	HRESULT hr = -1;
-	hr = CoCreateInstance(clsid, pUnkOuter, context, IID_PPV_ARGS(pType));
-	if(S_OK==hr) (*pType)->AddRef();
+	HRESULT hr = S_FALSE;
+
+	if(!CoCreateInstance(clsid, pUnkOuter, context, IID_PPV_ARGS(pType))) {
+		(*pType)->AddRef();
+		hr = S_OK;
+	}
 	return hr;
 }
 //create Moniker enumerate
 static inline HRESULT createMonEnum(const GUID category, IEnumMoniker** ppE) {
-	HRESULT hr = -1;
+	HRESULT hr = S_FALSE;
 	ICreateDevEnum* pDevEnum = NULL;
 	IEnumMoniker* pEnumMoniker = NULL;
 
-	hr = createInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, &pDevEnum);
-	if(S_OK==hr) {
-		hr = pDevEnum->CreateClassEnumerator(category, &pEnumMoniker, 0);
-		if(S_OK==hr) {
+	if(!createInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, &pDevEnum)) {
+		if(!pDevEnum->CreateClassEnumerator(category, &pEnumMoniker, 0)) {
 			(*ppE) = pEnumMoniker;
 			(*ppE)->AddRef();
-			safeRelease(&pEnumMoniker);
+			hr = S_OK;
 		}
-		safeRelease(&pDevEnum);
 	}
+	safeRelease(&pEnumMoniker);
+	safeRelease(&pDevEnum);
 	return hr;
 }
 //binding the last moniker
 static inline HRESULT bindEndMoniker(IEnumMoniker* pEnumMoniker, IMoniker** ppM) {
-	HRESULT hr = -1;
+	HRESULT hr = S_FALSE;
 	IMoniker* pMoniker = NULL;
 	ULONG pFetched;
 
-	NOTEMPTYRET(pEnumMoniker);
-	while(S_OK==pEnumMoniker->Next(1, &pMoniker, &pFetched)) {
+	while(pEnumMoniker && !pEnumMoniker->Next(1, &pMoniker, &pFetched)) {
 		(*ppM) = pMoniker;
 		safeRelease(&pMoniker);
 	}
-	if((*ppM)!=NULL) {
-		hr = S_OK;
+	if((*ppM)) {
 		(*ppM)->AddRef();
+		hr = S_OK;
 	}
 	return hr;
 }
 //binding the first moniker
 static inline HRESULT bindStartMoniker(IEnumMoniker* pEnumMoniker, IMoniker** ppM) {
-	HRESULT hr = -1;
+	HRESULT hr = S_FALSE;
 	IMoniker* pMoniker = NULL;
 	ULONG pFetched;
 
-	NOTEMPTYRET(pEnumMoniker);
-	if(S_OK==(hr=pEnumMoniker->Next(1, &pMoniker, &pFetched))) {
+	if(pEnumMoniker && !pEnumMoniker->Next(1, &pMoniker, &pFetched)) {
 		(*ppM) = pMoniker;
 		(*ppM)->AddRef();
-		safeRelease(&pMoniker);
+		hr = S_OK;
 	}
+	safeRelease(&pMoniker);
 	return hr;
 }
 //get moniker name
 static inline HRESULT getMonikerName(IMoniker* pMoniker, BSTR* pName) {
-	HRESULT hr = -1;
+	HRESULT hr = S_FALSE;
 	IPropertyBag* pProp = NULL;
+	VARIANT varName;
+	VariantInit(&varName);
 
-	NOTEMPTYRET(pMoniker);
-	hr = pMoniker->BindToStorage(NULL, NULL, IID_IPropertyBag, (void**)&pProp);
-	if(S_OK==hr) {
-		VARIANT varName;
-		VariantInit(&varName);
-		hr = pProp->Read(L"FriendlyName", &varName, 0);
-		if(S_OK==hr) {
+	if(pMoniker && !pMoniker->BindToStorage(NULL, NULL, IID_IPropertyBag, (void**)&pProp)) {
+		if(!pProp->Read(FRIENDLYNAME, &varName, 0)) {
 			(*pName)=varName.bstrVal;
+			hr = S_OK;
 		}
-		VariantClear(&varName);
-		safeRelease(&pProp);
 	}
+	VariantClear(&varName);
+	safeRelease(&pProp);
 	return hr;
 }
 

@@ -11,16 +11,16 @@ public:
 	//initialize containers
 	BOOL initDevContainer();
 	//get input device end element
-	WCHAR* getInDevEnd();
+	WCHAR* getInDevEnd() const;
 	//get out device end element
-	WCHAR* getOutDevEnd();
+	WCHAR* getOutDevEnd() const;
 	//get input device start element
-	WCHAR* getInDevStart();
+	WCHAR* getInDevStart() const;
 	//get out device start element
-	WCHAR* getOutDevStart();
+	WCHAR* getOutDevStart() const;
 	//get device name by position
-	WCHAR* getInPos(int pos);
-	WCHAR* getOutPos(int pos);
+	WCHAR* getInPos(int pos) const;
+	WCHAR* getOutPos(int pos) const;
 private:
 	//add devices to container
 	UINT addDevToContainer(GUID category, std::vector<wchar_t*>* vec);

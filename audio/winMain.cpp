@@ -1,10 +1,5 @@
-/*
- this file is a test file that test audio capture functions
-*/
-#include "./Capture/wavCapture.h"
-#include "./Capture/audioRender.h"
-#include "./Capture/enumDevice.h"
-#include "./Capture/fileManage.h"
+
+#include "./Capture/audio.h"
 
 #define MYWINX 400
 #define MYWINY 150
@@ -32,28 +27,32 @@ static WCHAR* wcRenderPath = TEXT("E:\\AudioCapture\\Example.mp3");
 static HWND hwndArray[HWNDCOUNT];
 static wavCapture clzCapture;
 static audioRender clzRender;
+static enumDevice clzEnumDevice;
 static HRESULT capHr;
 static HRESULT renHr;
 
-void initAudioCapture() {
+void initAudioCapture(const enumDevice& clzEnumDevice) {
 	fileManage fm;
 	enumDevice ed;
 	WCHAR* filePath = NULL;
 	WCHAR* deviceName = NULL;
 
-	ed.initDevContainer();
-	deviceName = ed.getInDevEnd();
+	deviceName = clzEnumDevice.getInDevEnd();
 	filePath = fm.getUsePath(wcCapturePath, wcCaptureFileType);
-	capHr = clzCapture.initCapture(filePath, deviceName, 0);
+	capHr = clzCapture.initCapture(filePath, deviceName);
 }
-void initAudioRender() {
+void initAudioRender(const enumDevice& clzEnumDevice) {
 	fileManage fm;
 	enumDevice ed;
 	WCHAR* deviceName = NULL;
 
-	ed.initDevContainer();
-	deviceName = ed.getOutDevStart();
+	deviceName = clzEnumDevice.getOutDevStart();
 	renHr = clzRender.initRender(wcRenderPath, deviceName);
+}
+void initContainer() {
+	clzEnumDevice.initDevContainer();
+	initAudioCapture(clzEnumDevice);
+	initAudioRender(clzEnumDevice);
 }
 
 void initConsole(void)
@@ -67,8 +66,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch(msg) {
 		case WM_CREATE:
 			initCom();
-			initAudioCapture();
-			initAudioRender();
+			initContainer();
 			for(int i=0; i<HWNDCOUNT; i++) {
 				switch(i) {
 					case 0:
@@ -107,7 +105,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				capHr = 0;
 			}  else if(wParam==2) {
 				clzCapture.stopCapture();
-				initAudioCapture();
+				initAudioCapture(clzEnumDevice);
 			} else if(wParam==3 && !renHr) {
 				clzRender.startRender();
 				renHr = 1;
@@ -116,7 +114,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				renHr = 0;
 			} else if(wParam==5) {
 				clzRender.stopRender();
-				initAudioRender();
+				initAudioRender(clzEnumDevice);
 			}
 			break;
 		default:

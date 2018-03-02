@@ -6,37 +6,30 @@
 class audioManage {
 protected:
 	audioManage();
-	virtual ~audioManage();
-	//add a filter by Default of device category
-	HRESULT addCategoryByDefault(const GUID category, IFilterGraph* pGraph, IBaseFilter** pBaseFilter);
+	~audioManage();
 	//add a filter by Name of device category
-	HRESULT addCategoryByName(const GUID category, IFilterGraph* pGraph, 
-		IBaseFilter** pBaseFilter, const BSTR mName);
+	HRESULT addCategoryByName(const GUID category, IBaseFilter** pBaseFilter, const BSTR mName) const;
 	//add a filter by CLSID to graph
-	HRESULT addFilterByCLSID(IFilterGraph* pGraph, CLSID clsid, IBaseFilter** ppF, LPCWSTR wasName);
-	//create a filter by Default of device category
-	HRESULT createCategoryByDefault(const GUID category, IBaseFilter** pBaseFilter);
+	HRESULT addFilterByCLSID(CLSID clsid, IBaseFilter** ppF, LPCWSTR wasName) const;
 	//create a filter by Name of device category
-	HRESULT createCategoryByName(const GUID category, IBaseFilter** pBaseFilter, const BSTR mName);
+	HRESULT createCategoryByName(const GUID category, IBaseFilter** pBaseFilter, const BSTR mName) const;
 	//create and return a filter
-	HRESULT createFilterByCLSID(const CLSID clsid, IBaseFilter** ppF);
+	HRESULT createFilterByCLSID(const CLSID clsid, IBaseFilter** ppF) const;
 	//get a pins
-	HRESULT getPin(IBaseFilter* pFilter, const PIN_DIRECTION pinDir, IPin** pInt);
+	HRESULT getPin(IBaseFilter* pFilter, const PIN_DIRECTION pinDir, IPin** pInt) const;
 	//connect two filters
-	HRESULT connectFilters(IGraphBuilder* pGraph, IBaseFilter* pSrc, IBaseFilter* pDest);
+	HRESULT connectFilters(IBaseFilter* pSrc, IBaseFilter* pDest) const;
 	//find a unconnected pin
-	BOOL findUnconnectPin(IPin* pPin);
+	BOOL findUnconnectPin(IPin* pPin) const;
 	//dynamic load
 	template<typename TYPE>
-	BOOL dynamicLoad(HINSTANCE* hinstLib, const LPCWSTR dllName, const LPCSTR funName, TYPE* procAdd);
+	BOOL dynamicLoad(HINSTANCE* hinstLib, const LPCWSTR dllName, const LPCSTR funName, TYPE* procAdd) const;
 	//register a filter
-	HRESULT registerWavFilter();
+	HRESULT registerWavFilter() const;
 	//unregister a filter
-	HRESULT unRegisterWavFilter();
-	//enumerate pins
-	void enumPins(IBaseFilter* pFilter);
-	//enumerate filters
-	void enumFilters(IFilterGraph* pGraph);
+	HRESULT unRegisterWavFilter() const;
+protected:
+	IGraphBuilder* pGraph;
 };
 
 #endif

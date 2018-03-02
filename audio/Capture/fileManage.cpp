@@ -21,7 +21,7 @@ UINT fileManage::makeVolume() {
 	}
 	return len;
 }
-UINT fileManage::makeVolume(UINT num) {
+UINT fileManage::makeVolume(const UINT num) {
 	WCHAR volumePathName[MAX_PATH+1];	
 	UINT len = 0;
 
@@ -35,7 +35,7 @@ UINT fileManage::makeVolume(UINT num) {
 	}
 	return len;
 }
-UINT fileManage::getVolume(WCHAR* volumePathName, UINT num) {
+UINT fileManage::getVolume(WCHAR* volumePathName, UINT num) const {
 	HANDLE findHandle = NULL;
 	DWORD charCount = MAX_PATH+1;
 	WCHAR volumeName[MAX_PATH+1];
@@ -77,7 +77,7 @@ UINT fileManage::getVolume(WCHAR* volumePathName, UINT num) {
 	findHandle = INVALID_HANDLE_VALUE;
 	return result;
 }
-BOOL fileManage::retrieveDevName(WCHAR* deviceName) {
+BOOL fileManage::retrieveDevName(WCHAR* deviceName) const {
 	WCHAR tem = L'0';
 	UINT index = 0;
 	WCHAR bvalue[5] = {L'O',L'L',L'U',L'M',L'E'};
@@ -109,7 +109,7 @@ BOOL fileManage::retrieveDevName(WCHAR* deviceName) {
 
 //second parameter must be an effective address
 //third parameter is start copy position
-UINT fileManage::copyString(const WCHAR* src, WCHAR* dest, UINT pos) {
+UINT fileManage::copyString(const WCHAR* src, WCHAR* dest, UINT pos) const {
 	DWORD len = wcslen(src);
 	if(len<=0 || dest==NULL || pos<0) return 0;
 	for(UINT i=0; i<len; i++, pos++) {
@@ -137,7 +137,7 @@ UINT fileManage::randomFileName() {
 	return len;
 }
 //create directory
-void fileManage::makeDir(WCHAR* dirPath, UINT vlen, UINT plen) {
+void fileManage::makeDir(WCHAR* dirPath, const UINT vlen, const UINT plen) const {
 	int pos = 0;
 	int len = (vlen+plen+1)<<1;
 	WCHAR* makePath = new WCHAR[len];
@@ -152,7 +152,7 @@ void fileManage::makeDir(WCHAR* dirPath, UINT vlen, UINT plen) {
 	}
 	delete[] makePath;
 }
-void fileManage::makeFilePath(WCHAR* dirPath, WCHAR* suffix) {
+void fileManage::makeFilePath(WCHAR* dirPath, WCHAR* suffix) const {
 	UINT pos = 0;
 	pos = copyString(useVolume, realizePath, pos);
 	pos = copyString(dirPath, realizePath, pos);
@@ -181,7 +181,7 @@ WCHAR* fileManage::getUsePath(WCHAR* dirPath, WCHAR* suffix) {
 
 	return realizePath;
 }
-WCHAR* fileManage::getUsePath(UINT num, WCHAR* dirPath, WCHAR* suffix) {
+WCHAR* fileManage::getUsePath(const UINT num, WCHAR* dirPath, WCHAR* suffix) {
 	if(useVolume!=NULL || realizePath!=NULL) {
 		delete[] useVolume;
 		delete[] realizePath;

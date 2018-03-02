@@ -9,13 +9,12 @@ public:
 	~audioRender();
 
 	HRESULT initRender(WCHAR* filePath, const BSTR deviceName);
-	void startRender();
-	void pauseRender();
-	void stopRender();
+	HRESULT startRender();
+	HRESULT pauseRender();
+	HRESULT stopRender();
 private:
-	IGraphBuilder* pGraph;
-	IBaseFilter* pReader;
 	IBaseFilter* pDevice;
+	IBaseFilter* pReader;
 	IFileSourceFilter* pSource;
 	IMediaControl* pControl;
 	IMediaEvent* pEvent;

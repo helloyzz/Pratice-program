@@ -1,10 +1,9 @@
 #include "audioRender.h"
 
-audioRender::audioRender(): pGraph(NULL), pDevice(NULL), pReader(NULL),
+audioRender::audioRender(): audioManage(), pDevice(NULL), pReader(NULL),
 							pControl(NULL), pEvent(NULL), pSource(NULL) {
 }
 audioRender::~audioRender() {
-	safeRelease(&pGraph);
 	safeRelease(&pReader);
 	safeRelease(&pDevice);
 	safeRelease(&pSource);
@@ -13,34 +12,27 @@ audioRender::~audioRender() {
 }
 
 HRESULT audioRender::initRender(WCHAR* filePath, const BSTR deviceName) {
-	HRESULT hr = -1;
+	HRESULT hr = S_FALSE;
 
-	if(filePath==NULL || deviceName==NULL) return hr;
-	hr = createInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, &pGraph);
-	if(S_OK!=hr) return hr;
-	hr = addCategoryByName(CLSID_AudioRendererCategory, pGraph, &pDevice, deviceName);
-	if(S_OK!=hr) return hr;
-	hr = addFilterByCLSID(pGraph, CLSID_AsyncReader, &pReader, NULL);
-	if(S_OK!=hr) return hr;
-	hr = pReader->QueryInterface(IID_IFileSourceFilter, (void**)&pSource);
-	if(S_OK!=hr) return hr;
-	hr = pSource->Load(filePath, NULL);
-	if(S_OK!=hr) return hr;
-	
-	hr = pGraph->QueryInterface(IID_IMediaControl, (void**)&pControl);
-	if(S_OK!=hr) return hr;
-	hr = pGraph->QueryInterface(IID_IMediaEvent, (void**)&pEvent);
-	if(S_OK!=hr) return hr;
-
-	hr = connectFilters(pGraph, pReader, pDevice);
+	if(filePath && deviceName && 
+		!createInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, &pGraph) && 
+		!addCategoryByName(CLSID_AudioRendererCategory, &pDevice, deviceName) && 
+		!addFilterByCLSID(CLSID_AsyncReader, &pReader, NULL) && 
+		!pReader->QueryInterface(IID_IFileSourceFilter, (void**)&pSource) && 
+		!pSource->Load(filePath, NULL) && 
+		!pGraph->QueryInterface(IID_IMediaControl, (void**)&pControl) && 
+		!pGraph->QueryInterface(IID_IMediaEvent, (void**)&pEvent) && 
+		!connectFilters(pReader, pDevice)) {
+		hr = S_OK;
+	}
 	return hr;
 }
-void audioRender::startRender() {
-	pControl->Run();
+HRESULT audioRender::startRender() {
+	return pControl->Run();
 }
-void audioRender::pauseRender() {
-	pControl->Pause();
+HRESULT audioRender::pauseRender() {
+	return pControl->Pause();
 }
-void audioRender::stopRender() {
-	pControl->Stop();
+HRESULT audioRender::stopRender() {
+	return pControl->Stop();
 }

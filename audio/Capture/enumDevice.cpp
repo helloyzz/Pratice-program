@@ -55,32 +55,32 @@ void enumDevice::releaseOutDevContainer() {
 }
 
 //get input device end element
-WCHAR* enumDevice::getInDevEnd() {
+WCHAR* enumDevice::getInDevEnd() const {
 	if(inDevContainer.empty()) return NULL;
-	std::vector<wchar_t*>::iterator iter = inDevContainer.end()-1;
+	std::vector<wchar_t*>::const_iterator iter = inDevContainer.end()-1;
 	return (*iter);
 }
 //get out device end element
-WCHAR* enumDevice::getOutDevEnd() {
+WCHAR* enumDevice::getOutDevEnd() const {
 	if(outDevContainer.empty()) return NULL;
-	std::vector<wchar_t*>::iterator iter = outDevContainer.end()-1;
+	std::vector<wchar_t*>::const_iterator iter = outDevContainer.end()-1;
 	return (*iter);
 }
 //get input device start element
-WCHAR* enumDevice::getInDevStart() {
+WCHAR* enumDevice::getInDevStart() const {
 	if(inDevContainer.empty()) return NULL;
-	std::vector<wchar_t*>::iterator iter = inDevContainer.begin();
+	std::vector<wchar_t*>::const_iterator iter = inDevContainer.begin();
 	return (*iter);
 }
 //get out device start element
-WCHAR* enumDevice::getOutDevStart() {
+WCHAR* enumDevice::getOutDevStart() const {
 	if(outDevContainer.empty()) return NULL;
-	std::vector<wchar_t*>::iterator iter = outDevContainer.begin();
+	std::vector<wchar_t*>::const_iterator iter = outDevContainer.begin();
 	return (*iter);
 }
 //get device name by position
-WCHAR* enumDevice::getInPos(int pos) {
-	std::vector<wchar_t*>::iterator iter = inDevContainer.begin();
+WCHAR* enumDevice::getInPos(int pos) const {
+	std::vector<wchar_t*>::const_iterator iter = inDevContainer.begin();
 	while(pos--) {
 		if(iter==inDevContainer.end()) {
 			iter--;
@@ -91,7 +91,7 @@ WCHAR* enumDevice::getInPos(int pos) {
 	return (*iter);
 }
 
-WCHAR* enumDevice::getOutPos(int pos) {
-	std::vector<wchar_t*>::iterator iter = outDevContainer.begin();
+WCHAR* enumDevice::getOutPos(int pos) const {
+	std::vector<wchar_t*>::const_iterator iter = outDevContainer.begin();
 	return NULL;
 }
