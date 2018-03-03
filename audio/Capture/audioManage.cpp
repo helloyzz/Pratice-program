@@ -22,6 +22,7 @@ HRESULT audioManage::addCategoryByName(const GUID category, IBaseFilter** pBaseF
 				!pGraph->AddFilter(*pBaseFilter, NULL)) {
 				(*pBaseFilter)->AddRef();
 				hr = S_OK;
+				safeRelease(&pMoniker);
 				break;
 			}
 			pName = NULL;
@@ -60,6 +61,7 @@ HRESULT audioManage::createCategoryByName(const GUID category, IBaseFilter** pBa
 				!pMoniker->BindToObject(NULL, NULL, IID_IBaseFilter, (void**)pBaseFilter)) {
 				hr = S_OK;
 				break;
+				safeRelease(&pMoniker);
 			}
 			pName = NULL;
 			safeRelease(&pMoniker);
@@ -94,6 +96,7 @@ HRESULT audioManage::getPin(IBaseFilter* pFilter, const PIN_DIRECTION pinDir, IP
 			if(!pPin->QueryDirection(&pinDirect) && pinDirect==pinDir) {
 				*pInt = pPin;
 				hr = S_OK;
+				safeRelease(&pPin);
 				break;
 			}
 			safeRelease(&pPin);
